@@ -1,6 +1,10 @@
 {
   "extends": ["airbnb", "prettier", "plugin:node/recommended"],
   "plugins": ["prettier"],
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2020
+  },
   "rules": {
     "prettier/prettier": [
       "error",
@@ -20,6 +24,7 @@
     "class-methods-use-this": "off",
     "prefer-destructuring": ["error", { "object": true, "array": false }],
     "no-unused-vars": ["error", { "argsIgnorePattern": "req|res|next|val|err" }],
-    "new-cap":"warn"
+    "new-cap":"warn",
+    "node/no-unsupported-features/es-syntax":"off"
   }
 }
