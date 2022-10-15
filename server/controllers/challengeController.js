@@ -1,10 +1,16 @@
 const Challenge = require("../models/challengeModel");
+const APIFeatures = require("../utils/apiFeatures");
 
 //! HANDLERS
 
 exports.getAllChallenges = async (req, res) => {
   try {
-    const challenges = await Challenge.find();
+    const features = new APIFeatures(Challenge.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+    const challenges = await features.query;
     res.status(200).json({
       status: "success",
       requestedAt: req.requestTime,
