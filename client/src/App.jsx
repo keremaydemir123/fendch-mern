@@ -1,5 +1,5 @@
 function App() {
-  return <h1 className="text-3xl font-bold underline">Hello world!</h1>;
+  return <div className="bg-gradient-to-r from-violet-500 to-indigo-500"></div>;
 }
 
 export default App;
