@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const challengeRouter = require("./routes/challengeRoutes");
+const projectRouter = require("./routes/projectRoutes");
 const userRouter = require("./routes/userRoutes");
 
 dotenv.config({ path: "./config.env" });
@@ -27,6 +28,7 @@ app.use((req, res, next) => {
 
 //! ROUTES
 app.use("/api/v1/challenges", challengeRouter);
+app.use("/api/v1/challenges/:id/projects", projectRouter);
 app.use("/api/v1/users", userRouter);
 
 module.exports = app;
