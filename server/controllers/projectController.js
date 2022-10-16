@@ -1,5 +1,5 @@
 const Project = require("../models/projectModel");
-const APIFeatures = require("../utils/apiFeatures");
+const APIFeatures = require("../utils/APIFeatures");
 
 //! MIDLEWARES
 exports.aliasTopProjects = (req, res, next) => {
