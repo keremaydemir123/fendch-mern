@@ -15,8 +15,21 @@ const challengeSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: new Date(),
+    default: Date.now(),
   },
+  secretChallenge: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+challengeSchema.pre(/^find/, function (next) {
+  this.find({ secretChallenge: { $ne: true } });
+  next();
+});
+challengeSchema.pre("aggregate", function (next) {
+  this.pipeline().unshift({ $match: { secretChallenge: { $ne: true } } });
+  next();
 });
 
 // eslint-disable-next-line new-cap

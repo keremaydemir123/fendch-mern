@@ -1,94 +1,78 @@
 const Challenge = require("../models/challengeModel");
+const APIFeatures = require("../utils/APIFeatures");
+const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/AppError");
 
 //! HANDLERS
 
-exports.getAllChallenges = async (req, res) => {
-  try {
-    const challenges = await Challenge.find();
-    res.status(200).json({
-      status: "success",
-      requestedAt: req.requestTime,
-      data: {
-        challenges,
-      },
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: "fail",
-      message: "something went wrong",
-    });
-  }
-};
+exports.getAllChallenges = catchAsync(async (req, res, next) => {
+  const features = new APIFeatures(Challenge.find(), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
+  const challenges = await features.query;
+  res.status(200).json({
+    status: "success",
+    requestedAt: req.requestTime,
+    data: {
+      challenges,
+    },
+  });
+});
 
-exports.getChallenge = async (req, res) => {
-  try {
-    const challenge = await Challenge.findById(req.params.id);
-    res.status(200).json({
-      status: "success",
-      data: {
-        challenge,
-      },
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: "fail",
-      message: "something went wrong",
-    });
-  }
-};
+exports.getChallenge = catchAsync(async (req, res, next) => {
+  const challenge = await Challenge.findById(req.params.id);
 
-exports.createChallenge = async (req, res) => {
-  try {
-    const newChallenge = await Challenge.create(req.body);
-    res.status(201).json({
-      status: "success",
-      data: {
-        challenge: newChallenge,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: "Invalid data sent",
-    });
+  if (!challenge) {
+    return next(new AppError("No challenge found with that ID", 404));
   }
-};
 
-exports.updateChallenge = async (req, res) => {
-  try {
-    const challenge = await Challenge.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-    res.status(200).json({
-      status: "success",
-      data: {
-        challenge,
-      },
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: "fail",
-      message: "something went wrong",
-    });
-  }
-};
+  res.status(200).json({
+    status: "success",
+    data: {
+      challenge,
+    },
+  });
+});
 
-exports.deleteChallenge = async (req, res) => {
-  try {
-    await Challenge.findByIdAndDelete(req.params.id);
-    res.status(200).json({
-      status: "success",
-      data: null,
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: "fail",
-      message: "something went wrong",
-    });
+exports.createChallenge = catchAsync(async (req, res, next) => {
+  const newChallenge = await Challenge.create(req.body);
+  res.status(201).json({
+    status: "success",
+    data: {
+      challenge: newChallenge,
+    },
+  });
+});
+
+exports.updateChallenge = catchAsync(async (req, res, next) => {
+  const challenge = await Challenge.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!challenge) {
+    return next(new AppError("No challenge found with that ID", 404));
   }
-};
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      challenge,
+    },
+  });
+});
+
+exports.deleteChallenge = catchAsync(async (req, res, next) => {
+  const challenge = await Challenge.findByIdAndDelete(req.params.id);
+
+  if (!challenge) {
+    return next(new AppError("No challenge found with that ID", 404));
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: null,
+  });
+});

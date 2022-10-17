@@ -8,3 +8,5 @@ Vite React JavaScript Tailwind
 
 Node Express MongoDB mongoose
 
+#### Next --> JWT auth
+
