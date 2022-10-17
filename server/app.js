@@ -5,6 +5,7 @@ const cors = require("cors");
 const challengeRouter = require("./routes/challengeRoutes");
 const projectRouter = require("./routes/projectRoutes");
 const userRouter = require("./routes/userRoutes");
+const authRouter = require("./routes/authRoutes");
 const AppError = require("./utils/AppError");
 const globalErrorHandler = require("./controllers/errorController");
 
@@ -28,8 +29,9 @@ app.use((req, res, next) => {
 
 //! ROUTES
 app.use("/api/v1/challenges", challengeRouter);
-app.use("/api/v1/challenges/:id/projects", projectRouter);
+app.use("/api/v1/projects", projectRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/auth", authRouter);
 
 app.all("*", (req, res, next) => {
   // if next function has an argument, it must be an error
