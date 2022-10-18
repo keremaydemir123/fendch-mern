@@ -1,33 +1,32 @@
 import { useRef, useState, useEffect } from "react";
-import { FaCheck, FaTimes, FaInfoCircle } from "react-icons/fa";
+import { FaCheck, FaTimes } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import Button from "../../components/Button";
+import { useAsyncFn } from "../../hooks/useAsync";
+import { signup } from "../../services/auth";
+import Loading from "../../components/Loading";
 
 const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
 const EMAIL_REGEX = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
+const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
-const Register = () => {
+const Signup = () => {
   const userRef = useRef();
   const errRef = useRef();
 
   const [username, setUsername] = useState("");
   const [validName, setValidName] = useState(false);
-  const [userFocus, setUserFocus] = useState(false);
 
   const [email, setEmail] = useState("");
   const [validEmail, setValidEmail] = useState(false);
-  const [emailFocus, setEmailFocus] = useState(false);
 
-  const [pwd, setPwd] = useState("");
-  const [validPwd, setValidPwd] = useState(false);
-  const [pwdFocus, setPwdFocus] = useState(false);
+  const [password, setPassword] = useState("");
+  const [validPassword, setValidPassword] = useState(false);
 
-  const [matchPwd, setMatchPwd] = useState("");
+  const [matchPassword, setMatchPassword] = useState("");
   const [validMatch, setValidMatch] = useState(false);
-  const [matchFocus, setMatchFocus] = useState(false);
 
-  const [errMsg, setErrMsg] = useState("");
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
@@ -39,20 +38,21 @@ const Register = () => {
   }, [username]);
 
   useEffect(() => {
-    setValidName(EMAIL_REGEX.test(email));
+    setValidEmail(EMAIL_REGEX.test(email));
   }, [email]);
 
   useEffect(() => {
-    setValidPwd(PWD_REGEX.test(pwd));
-    setValidMatch(pwd === matchPwd);
-  }, [pwd, matchPwd]);
+    setValidPassword(PASSWORD_REGEX.test(password));
+    setValidMatch(password === matchPassword);
+  }, [password, matchPassword]);
 
-  useEffect(() => {
-    setErrMsg("");
-  }, [username, email, pwd, matchPwd]);
+  const { loading, error, execute: signupFn } = useAsyncFn(signup);
 
-  const handleSubmit = (e) => {
+  if (loading) return <Loading />;
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    await signupFn({ username, email, password });
     setSuccess(true);
   };
 
@@ -69,17 +69,17 @@ const Register = () => {
         <section className="flex flex-col gap-1 justify-start p-8 bg-slate-200 w-[500px] rounded-md">
           <p
             ref={errRef}
-            className={errMsg ? "errmsg" : "absolute left-[-9999px]"}
+            className={error ? "errmsg" : "absolute left-[-9999px]"}
             aria-live="assertive"
           >
-            {errMsg}
+            {error}
           </p>
           <h1 className="text-2xl border-b-2 border-1 border-red-800 pb-2 text-red-900">
-            Register
+            Sign Up
           </h1>
           <form
             onSubmit={handleSubmit}
-            className="flex flex-col justify-start gap-1"
+            className="flex flex-col justify-start gap-1 py-2"
           >
             <label
               htmlFor="username"
@@ -105,25 +105,8 @@ const Register = () => {
               required
               aria-invalid={validName ? "false" : "true"}
               aria-describedby="uidnote"
-              onFocus={() => setUserFocus(true)}
-              onBlur={() => setUserFocus(false)}
               className="px-2 py-1 rounded-md outline-none bg-red-50"
             />
-            <p
-              id="uidnote"
-              className={
-                userFocus && !validName
-                  ? "relative text-xs rounded-lg bg-slate-100 text-dark-base p-1 -bottom-1"
-                  : "absolute left-[-9999px]"
-              }
-            >
-              <FaInfoCircle className="mr-1" />
-              4 to 24 characters.
-              <br />
-              Must begin with a letter.
-              <br />
-              Letters, numbers, underscores, hyphens allowed.
-            </p>
 
             <label htmlFor="email" className="text-red-900 flex items-center">
               Email:
@@ -145,25 +128,8 @@ const Register = () => {
               required
               aria-invalid={validEmail ? "false" : "true"}
               aria-describedby="uidnote"
-              onFocus={() => setEmailFocus(true)}
-              onBlur={() => setEmailFocus(false)}
               className="px-2 py-1 rounded-md outline-none bg-red-50"
             />
-            <p
-              id="uidnote"
-              className={
-                emailFocus && !validEmail
-                  ? "relative text-xs rounded-lg bg-slate-100 text-dark-base p-1 -bottom-1"
-                  : "absolute left-[-9999px]"
-              }
-            >
-              <FaInfoCircle className="mr-1" />
-              4 to 24 characters.
-              <br />
-              Must begin with a letter.
-              <br />
-              Letters, numbers, underscores, hyphens allowed.
-            </p>
 
             <label
               htmlFor="password"
@@ -171,95 +137,61 @@ const Register = () => {
             >
               Password:
               <FaCheck
-                className={validPwd ? "text-green-300 ml-1" : "hidden"}
+                className={validPassword ? "text-green-300 ml-1" : "hidden"}
               />
               <FaTimes
-                className={validPwd || !pwd ? "hidden" : "text-red-300 ml-1"}
+                className={
+                  validPassword || !password ? "hidden" : "text-red-300 ml-1"
+                }
               />
             </label>
             <input
               type="password"
               id="password"
-              onChange={(e) => setPwd(e.target.value)}
-              value={pwd}
+              onChange={(e) => setPassword(e.target.value)}
+              value={password}
               required
-              aria-invalid={validPwd ? "false" : "true"}
-              aria-describedby="pwdnote"
-              onFocus={() => setPwdFocus(true)}
-              onBlur={() => setPwdFocus(false)}
+              aria-invalid={validPassword ? "false" : "true"}
+              aria-describedby="passwordnote"
               className="px-2 py-1 rounded-md outline-none bg-red-50"
             />
-            <p
-              id="pwdnote"
-              className={
-                pwdFocus && !validPwd
-                  ? "relative text-xs rounded-lg bg-slate-100 text-dark-base p-1 -bottom-1"
-                  : "absolute left-[-9999px]"
-              }
-            >
-              <FaInfoCircle className="mr-1" />
-              8 to 24 characters.
-              <br />
-              Must include uppercase and lowercase letters, a number and a
-              special character.
-              <br />
-              Allowed special characters:{" "}
-              <span aria-label="exclamation mark">!</span>{" "}
-              <span aria-label="at symbol">@</span>{" "}
-              <span aria-label="hashtag">#</span>{" "}
-              <span aria-label="dollar sign">$</span>{" "}
-              <span aria-label="percent">%</span>
-            </p>
-
             <label
-              htmlFor="confirm_pwd"
+              htmlFor="confirm_password"
               className="text-red-900 flex items-center"
             >
               Confirm Password:
               <FaCheck
                 className={
-                  validMatch && matchPwd ? "text-green-300 ml-1" : "hidden"
+                  validMatch && matchPassword ? "text-green-300 ml-1" : "hidden"
                 }
               />
               <FaTimes
                 className={
-                  validMatch || !matchPwd ? "hidden" : "text-red-300 ml-1"
+                  validMatch || !matchPassword ? "hidden" : "text-red-300 ml-1"
                 }
               />
             </label>
             <input
               type="password"
-              id="confirm_pwd"
-              onChange={(e) => setMatchPwd(e.target.value)}
-              value={matchPwd}
+              id="confirm_password"
+              onChange={(e) => setMatchPassword(e.target.value)}
+              value={matchPassword}
               required
               aria-invalid={validMatch ? "false" : "true"}
               aria-describedby="confirmnote"
-              onFocus={() => setMatchFocus(true)}
-              onBlur={() => setMatchFocus(false)}
               className="px-2 py-1 rounded-md outline-none bg-red-50"
             />
-            <p
-              id="confirmnote"
-              className={
-                matchFocus && !validMatch
-                  ? "relative text-xs rounded-lg bg-slate-100 text-dark-base p-1 -bottom-1"
-                  : "absolute left-[-9999px]"
-              }
-            >
-              <FaInfoCircle className="mr-1" />
-              Must match the first password input field.
-            </p>
-
             <Button
-              disabled={!validName || !validPwd || !validMatch ? true : false}
               tail="w-full bg-red-200 my-3 text-red-900"
+              disabled={
+                !validName || !validPassword || !validMatch ? true : false
+              }
             >
               Sign Up
             </Button>
           </form>
           <p>
-            Already registered?
+            Already have an account?
             <br />
             <span className="line">
               <Link to="/login">
@@ -275,4 +207,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Signup;

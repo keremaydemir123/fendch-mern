@@ -1,6 +1,9 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Button from "../../components/Button";
+import { useAsyncFn } from "../../hooks/useAsync";
+import { login } from "../../services/auth";
+import Loading from "../../components/Loading";
 
 const Login = () => {
   const userRef = useRef();
@@ -8,19 +11,18 @@ const Login = () => {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [errMsg, setErrMsg] = useState("");
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     userRef.current.focus();
   }, []);
 
-  useEffect(() => {
-    setErrMsg("");
-  }, [username, password]);
-
-  const handleSubmit = (e) => {
+  const { loading, error, execute: loginFn } = useAsyncFn(login);
+  if (loading) return <Loading />;
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    await loginFn({ username, password });
+    setSuccess(true);
   };
 
   return (
@@ -38,11 +40,11 @@ const Login = () => {
           <p
             ref={errRef}
             className={
-              errMsg ? "bg-red-300 p-2 text-center" : "absolute left-[-9999px] "
+              error ? "bg-red-300 p-2 text-center" : "absolute left-[-9999px] "
             }
             aria-live="assertive"
           >
-            {errMsg}
+            {error}
           </p>
           <h1 className="text-2xl border-b-2 border-1 border-red-800 pb-2 text-red-900">
             Sign In
@@ -84,7 +86,7 @@ const Login = () => {
             Need an Account?
             <br />
             <span className="line">
-              <Link to="/register">
+              <Link to="/signin">
                 <Button tail="bg-red-200 my-3 text-red-900 px-4 shadow-sm">
                   Sign Up
                 </Button>

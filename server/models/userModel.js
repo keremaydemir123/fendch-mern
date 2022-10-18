@@ -7,12 +7,12 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: [true, "Please tell us your name!"],
-    unique: [true, "Username is already taken"],
+    unique: [true, "This username has already taken"],
   },
   email: {
     type: String,
     required: [true, "Please provide your email"],
-    unique: [true, "This email is already registered"],
+    unique: [true, "This email is already in use"],
     lowercase: true,
     validate: [validator.isEmail, "Please provide a valid email"],
   },
@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, "Please provide a password"],
-    minlength: 8,
+    minlength: [8, "Password must be at least 8 characterrs"],
     select: false,
   },
   passwordChangedAt: Date,
